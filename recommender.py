@@ -50,7 +50,7 @@ class ItemBasedCF(AbstractRecommender):
 		# Findes ton 10 bestsellers from items
 		for item in self.__itemUser_data:
 			self.__bestsellers.append((item, sum([self.__itemUser_data[item][user] for user in self.__itemUser_data[item]])))
-		self.__bestsellers = sorted(self.__bestsellers, key = itemgetter(1), reverse = True)[0:10]
+		self.__bestsellers = sorted(self.__bestsellers, key = itemgetter(1), reverse = True)[5:15]
 		
 		'''
 		for item in self.__itemUser_data:
@@ -58,7 +58,7 @@ class ItemBasedCF(AbstractRecommender):
 		self.__bestsellers = sorted(self.__bestsellers, key = itemgetter(1), reverse = True)[0:10]
 		'''
 
-	def similarItems(self, item, n):
+	def similarItems(self, item, n, simmilarityMethod):
 		'''
 			Findes all similar items of item in argument and returns top n similar items, which are sorted descending
 
@@ -66,7 +66,7 @@ class ItemBasedCF(AbstractRecommender):
 				item 	- terget item ID
 				n 		- count of similar items
 		'''
-		similarities = [(otherItem, sim.cosine(self.__itemUser_data[item], self.__itemUser_data[otherItem])) for otherItem in self.__itemUser_data if item != otherItem]
+		similarities = [(otherItem, simmilarityMethod(self.__itemUser_data[item], self.__itemUser_data[otherItem])) for otherItem in self.__itemUser_data if item != otherItem]
 		return sorted(similarities, key = itemgetter(1), reverse = True)[0:n]
 
 	def buildItemSimilarityDict(self, simmilarityMethod = sim.cosine, n = 20):
@@ -88,7 +88,7 @@ class ItemBasedCF(AbstractRecommender):
 			for item in self.__itemUser_data:
 				is_dict.setdefault(item, {})
 				sum_dict.setdefault(item, 0)
-				correlations = self.similarItems(item, n)
+				correlations = self.similarItems(item, n, simmilarityMethod)
 				for similarItem, similarity in correlations:
 					is_dict[item][similarItem] = similarity
 					sum_dict[item] += similarity
@@ -162,6 +162,7 @@ class ItemBasedCF(AbstractRecommender):
 
 				if self.__itemSimilarityDict_sum[item] > 0:
 					predictions.append((candidate, numerator / self.__itemSimilarityDict_sum[item]))
+					#predictions.append((candidate, numerator))
 				else:
 					predictions.append((candidate, 0))
 

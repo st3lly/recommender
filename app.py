@@ -23,7 +23,7 @@ def getUserItemDic(data):
 	_dict = {}
 	for row in data.itertuples():
 		_dict.setdefault(row.user_id, {})
-		reting = 0
+		rating = 0
 		if row.quantity > 5:
 			rating = 5
 		else:
@@ -70,7 +70,7 @@ def evaluation(recommender, testDataSet, dates, n = 10):
 			testDataSet 	- dictionary
 			n 				- count of recommendation for user
 	'''
-	precision_sum = 0
+	itemPrecision_sum = 0
 	hitUsersCount = 0
 	i = 0
 	count = len(testDataSet)
@@ -80,12 +80,12 @@ def evaluation(recommender, testDataSet, dates, n = 10):
 		hit = sum([1 for item in testDataSet[user] if item in recommendations])
 		if hit > 0:
 			hitUsersCount += 1
-		precision = hit / n
-		precision_sum += precision
+		itemPrecision = hit / n
+		itemPrecision_sum += itemPrecision
 		i += 1
-	print('Precision: ', precision_sum / len(testDataSet))
+	print('Precision: ', itemPrecision_sum / (len(testDataSet) * 10))
 	print('Count of users: ', len(testDataSet))
-	print('Count of users where was hit: ', hitUsersCount)
+	print('Hited users: ', hitUsersCount, '[', (hitUsersCount / count) * 100, '%]')
 
 if __name__ == '__main__':
 	'''
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 	activityDates = getActivitiesCreateTime()
 
 	ibcf = r.ItemBasedCF(userItem_data, itemUser_data, getItemsEndDateDict())
-	ibcf.buildItemSimilarityDict(n = 50, simmilarityMethod = sim.cosine)
+	ibcf.buildItemSimilarityDict(n = 50, simmilarityMethod = sim.jaccard)
 	print(len(userItem_data.keys()))
 	print(len(itemUser_data.keys()))
 

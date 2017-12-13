@@ -11,7 +11,7 @@ def cosine(dictA, dictB):
 			dictB 	- dictionary
 	'''
 	intersection = [o for o in dictA if o in dictB]
-	if len(intersection) != 0:
+	if len(intersection) > 0:
 		AB = sum([dictA[o] * dictB[o] for o in intersection])
 		normA = sqrt(sum([dictA[o] ** 2 for o in dictA]))
 		normB = sqrt(sum([dictB[o] ** 2 for o in dictB]))
@@ -50,7 +50,7 @@ def pearson(dictA, dictB):
 		return 0
 	meanOfA = np.mean([dictA[o] for o in dictA.keys()])
 	meanOfB = np.mean([dictB[o] for o in dictB.keys()])
-	numerator = sum([(dictA[o] - meanA) * (dictB[o] - meanB) for o in intersection])
+	numerator = sum([(dictA[o] - meanOfA) * (dictB[o] - meanOfB) for o in intersection])
 	deviationOfA = sqrt(sum([(dictA[o] - meanOfA) ** 2 for o in intersection]))
 	deviationOfB = sqrt(sum([(dictB[o] - meanOfB) ** 2 for o in intersection]))
 	if deviationOfA == 0 or deviationOfB == 0:
