@@ -32,31 +32,23 @@ class ItemBasedCF(AbstractRecommender):
 	'''
 		Simple Item-Based Collaborative Filtering class
 	'''
-	def __init__(self, userItem_data, itemUser_data, itemsEndDateDict):
+	def __init__(self, userItem_data, itemUser_data, itemsEndDateDict, bestsellers):
 		'''
 			Initialize object
 			
 			Arguments:
-				userItem_data 	- dictionary {userID : {itemID : quantity, ...}, ...}
-				itemUser_data 	- dictionary {ttemID : {userID : quantity, ...}, ...}
+				userItem_data 		- dictionary {userID : {itemID : quantity, ...}, ...}
+				itemUser_data 		- dictionary {ttemID : {userID : quantity, ...}, ...}
+				itemsEndDateDict 	- dictionary {item: endDate}
+				bestsellers 		- list of top 10 bestsellers for d days (see app.bestellers function)
+
 		'''
 		self.__itemUser_data = itemUser_data
 		self.__userItem_data = userItem_data
 		self.__itemSimilarityDict = None
 		self.__itemSimilarityDict_sum = None
-		self.__bestsellers = []
+		self.__bestsellers = bestsellers
 		self.__itemsEndDateDict = itemsEndDateDict
-
-		# Findes ton 10 bestsellers from items
-		for item in self.__itemUser_data:
-			self.__bestsellers.append((item, sum([self.__itemUser_data[item][user] for user in self.__itemUser_data[item]])))
-		self.__bestsellers = sorted(self.__bestsellers, key = itemgetter(1), reverse = True)[5:15]
-		
-		'''
-		for item in self.__itemUser_data:
-			self.__bestsellers.append((item, len(self.__itemUser_data[item])))
-		self.__bestsellers = sorted(self.__bestsellers, key = itemgetter(1), reverse = True)[0:10]
-		'''
 
 	def similarItems(self, item, n, simmilarityMethod):
 		'''
@@ -80,6 +72,7 @@ class ItemBasedCF(AbstractRecommender):
 		'''
 		fileName_is_dict = 'pickles/isd_' + simmilarityMethod.__name__ + '.pickle'
 		fileName_sum_dict = 'pickles/isd_' + simmilarityMethod.__name__ + '_sum.pickle'
+		print('Similarity method: ', simmilarityMethod.__name__)
 		if not os.path.exists(fileName_is_dict):
 			print('Item Similarity Dctionary file doesn\'t exist.')
 			print('Building dictionary ...')
