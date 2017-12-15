@@ -4,14 +4,14 @@ from operator import itemgetter
 import _pickle as pickle
 import os
 
-import similarity as sim
+import similarity
 
 class AbstractRecommender(metaclass = abc.ABCMeta):
 	'''
 		Abstract class for recommenders, whos will inherit basic features from this class
 	'''
 	@abc.abstractmethod
-	def buildItemSimilarityDict(self, simmilarityMethod = sim.cosine, n = 20):
+	def buildItemSimilarityDict(self, simmilarityMethod = similarity.cosine, n = 20):
 		raise NotImplementedError
 
 	@abc.abstractmethod
@@ -22,7 +22,7 @@ class UserBasedCF(AbstractRecommender):
 	'''
 		There was not enough time for doing this class
 	'''
-	def buildItemSimilarityDict(self, simmilarityMethod = sim.cosine, n = 20):
+	def buildItemSimilarityDict(self, simmilarityMethod = similarity.cosine, n = 20):
 		pass
 
 	def recommendation(self, userID, n = 10):
@@ -61,7 +61,7 @@ class ItemBasedCF(AbstractRecommender):
 		similarities = [(otherItem, simmilarityMethod(self.__itemUser_data[item], self.__itemUser_data[otherItem])) for otherItem in self.__itemUser_data if item != otherItem]
 		return sorted(similarities, key = itemgetter(1), reverse = True)[0:n]
 
-	def buildItemSimilarityDict(self, simmilarityMethod = sim.cosine, n = 20):
+	def buildItemSimilarityDict(self, similarityMethod = similarity.cosine, n = 20):
 		'''
 			Builds disctionary of similar items, which contains top-N similar items for each item
 			format of dictionary: {item: {similarItem: simmilarity, ...}, ...}
@@ -70,9 +70,9 @@ class ItemBasedCF(AbstractRecommender):
 				simmilarityMethod 	- function, which will be used for calculate similarity (default cosine)
 				n 					- count of similar items for item (defalut 20)
 		'''
-		fileName_is_dict = 'pickles/isd_' + simmilarityMethod.__name__ + '.pickle'
-		fileName_sum_dict = 'pickles/isd_' + simmilarityMethod.__name__ + '_sum.pickle'
-		print('Similarity method: ', simmilarityMethod.__name__)
+		fileName_is_dict = 'pickles/isd_' + similarityMethod.__name__ + '.pickle'
+		fileName_sum_dict = 'pickles/isd_' + similarityMethod.__name__ + '_sum.pickle'
+		print('Similarity method: ', similarityMethod.__name__)
 		if not os.path.exists(fileName_is_dict):
 			print('Item Similarity Dctionary file doesn\'t exist.')
 			print('Building dictionary ...')
@@ -81,7 +81,7 @@ class ItemBasedCF(AbstractRecommender):
 			for item in self.__itemUser_data:
 				is_dict.setdefault(item, {})
 				sum_dict.setdefault(item, 0)
-				correlations = self.similarItems(item, n, simmilarityMethod)
+				correlations = self.similarItems(item, n, similarityMethod)
 				for similarItem, similarity in correlations:
 					is_dict[item][similarItem] = similarity
 					sum_dict[item] += similarity

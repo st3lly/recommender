@@ -4,7 +4,7 @@ import time
 from operator import itemgetter
 import click
 
-import similarity as sim
+import similarity
 import recommender as r
 
 _activity_data_train = None
@@ -107,7 +107,7 @@ def evaluation(recommender, testDataSet, dates, n = 10):
 		recall = hit / len(testDataSet[user])
 		if hit > 0:
 			hitUsersCount += 1
-			f1 = 2 * precision * recall / (precision + recall)
+			f1 = 2 * (precision * recall / (precision + recall))
 		else:
 			f1 = 0
 		precision_sum += precision
@@ -117,41 +117,31 @@ def evaluation(recommender, testDataSet, dates, n = 10):
 	print('\n', 'Recommendation completed')
 	print()
 	print('--------------- EVALUATION ---------------')
-	print('Precision: ', precision_sum / len(testDataSet))
-	print('Recall: ', recall_sum / len(testDataSet))
-	print('F1: ', f1_sum / len(testDataSet))
+	print('Precision: ', precision_sum / count)
+	print('Recall: ', recall_sum / count)
+	print('F1: ', f1_sum / count)
 	print()
 	print('Count of users: ', len(testDataSet))
 	print('Hited users: ', hitUsersCount, '[', (hitUsersCount / count) * 100, '%]')
 	print('------------------------------------------')
 
 @click.command()
-@click.option('--sim', prompt = 'similarity method', default = 'cosine')
-def setSimilarityMethod(sim):
-	if sim == 'cosine':
-		return sim.cosine
-	elif sim == 'pearson':
-		return sim.pearson
-	elif sim == 'jaccard':
-		return sim.jaccard
-	else:
-		return None
-
-if __name__ == '__main__':
+@click.option('--sim', help = 'similarity method', default = 'cosine')
+def main(sim):
 	'''
 		Here are loaded data and called all functions for making recommendations
 	'''
 	start = time.time()
 
-	simmilarityMethod = setSimilarityMethod()
-
-	# loading data from csv files using pandas module
-	_activity_data_train = pd.read_csv('data/train_activity_v2.csv', sep = ',')
-	_dealDetails_data_train = pd.read_csv('data/train_deal_details.csv', sep = ',')
-	_detailItems_data_train = pd.read_csv('data/train_dealitems.csv', sep = ',')
-	_activity_data_test = pd.read_csv('data/test_activity_v2.csv', sep = ',')
-	_dealDetails_data_test = pd.read_csv('data/test_deal_details.csv', sep = ',')
-	_detailItems_data_test = pd.read_csv('data/test_dealitems.csv', sep = ',')
+	if sim == 'cosine':
+		_similarityMethod = similarity.cosine
+	elif sim == 'pearson':
+		_similarityMethod = similarity.pearson
+	elif sim == 'jaccard':
+		_similarityMethod = similarity.jaccard
+	else:
+		print('Wrong similarity method')
+		return None
 
 	# makes data dictioranies
 	userItem_data = getUserItemDict(_activity_data_train)
@@ -161,8 +151,19 @@ if __name__ == '__main__':
 	activityDates = getActivitiesCreateTime()
 
 	ibcf = r.ItemBasedCF(userItem_data, itemUser_data, getItemsEndDateDict(), bestsellers())
-	ibcf.buildItemSimilarityDict(n = 50, simmilarityMethod = sim.jaccard)
+	ibcf.buildItemSimilarityDict(n = 50, similarityMethod = _similarityMethod)
 
 	evaluation(ibcf, userItem_data_test, activityDates, 10)
 	print('===')
 	print('Execution time: ', int(time.time() - start), ' seconds')
+
+if __name__ == '__main__':
+		# loading data from csv files using pandas module
+	_activity_data_train = pd.read_csv('data/train_activity_v2.csv', sep = ',')
+	_dealDetails_data_train = pd.read_csv('data/train_deal_details.csv', sep = ',')
+	_detailItems_data_train = pd.read_csv('data/train_dealitems.csv', sep = ',')
+	_activity_data_test = pd.read_csv('data/test_activity_v2.csv', sep = ',')
+	_dealDetails_data_test = pd.read_csv('data/test_deal_details.csv', sep = ',')
+	_detailItems_data_test = pd.read_csv('data/test_dealitems.csv', sep = ',')
+
+	main()
